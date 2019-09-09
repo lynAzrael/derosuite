@@ -73,13 +73,11 @@ func Initialize() {
 	_ = err
 
 	Config = config.Mainnet // default is mainnnet
-
 	if Arguments["--testnet"].(bool) == true { // setup testnet if requested
 		Config = config.Testnet
 	}
 
 	ConsensusCfg = config.Solo_consensus
-
 	if Arguments["--dpos"].(bool) == true {
 		ConsensusCfg = config.Dpos_consensus
 	}
