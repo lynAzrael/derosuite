@@ -54,6 +54,8 @@ var Exit_In_Progress bool
 // on init this variable is updated to setup global config in 1 go
 var Config config.CHAIN_CONFIG
 
+var ConsensusCfg config.CONSENSUS_CONFIG
+
 // global logger all components will use it with context
 
 var Logger *logrus.Logger
@@ -74,6 +76,12 @@ func Initialize() {
 
 	if Arguments["--testnet"].(bool) == true { // setup testnet if requested
 		Config = config.Testnet
+	}
+
+	ConsensusCfg = config.Solo_consensus
+
+	if Arguments["--dpos"].(bool) == true {
+		ConsensusCfg = config.Dpos_consensus
 	}
 
 	// formatter := &logrus.TextFormatter{DisableColors : true}
@@ -125,7 +133,14 @@ func IsMainnet() bool {
 	if Config.Name == "mainnet" {
 		return true
 	}
+	return false
+}
 
+// tells whether we are solo mode
+func IsSolo() bool {
+	if ConsensusCfg.Name == "solo" {
+		return true
+	}
 	return false
 }
 

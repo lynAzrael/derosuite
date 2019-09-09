@@ -10,20 +10,15 @@ import (
 	"sync/atomic"
 )
 
+//
 type RegFunc func(cfg Consensus_object, chain *blockchain.Blockchain) (Consensus, error)
-
 var RegMap = make(map[string]RegFunc)
+
+var loggerpool *log.Entry
 
 type Consensus interface {
 	Start()
 	Stop()
-}
-
-var loggerpool *log.Entry
-
-type Consensus_object struct {
-	name      string
-	iinterval int64
 }
 
 func Init_Consensus(params map[string]interface{}, chain *blockchain.Blockchain) (*Consensus, error) {
@@ -47,7 +42,7 @@ func Init_Consensus(params map[string]interface{}, chain *blockchain.Blockchain)
 		err = decoder.Decode(&cfg)
 		if err != nil {
 			loggerpool.Warnf("Error unmarshalling consensus data err %s", err)
-		} else { // successfully unmarshalled data, add it to consensus
+		} else {
 			loggerpool.Debugf("Will try to init consensus：", cfg.name)
 			load := Load(cfg.name)
 			if load == nil {
@@ -78,6 +73,11 @@ func Load(name string) (RegFunc) {
 		return reg
 	}
 	return nil
+}
+
+type Consensus_object struct {
+	name      string
+	iinterval int64
 }
 
 func (cfg *Consensus_object) GetName() string {
