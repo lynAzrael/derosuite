@@ -16,7 +16,10 @@
 
 package config
 
-import "github.com/satori/go.uuid"
+import (
+	"github.com/satori/go.uuid"
+	"time"
+)
 import "github.com/deroproject/derosuite/crypto"
 
 // all global configuration variables are picked from here
@@ -71,7 +74,7 @@ const CRYPTONOTE_FUTURE_TIME_LIMIT = 2
 // we can easily improve TPS by changing few parameters in this file
 // the resources compute/network may not be easy for the developing countries
 // we need to trade of TPS  as per community
-const CRYPTONOTE_MAX_BLOCK_SIZE = uint64((1 * 1024 * 1024) + (256*1024 )) // max block size limit
+const CRYPTONOTE_MAX_BLOCK_SIZE = uint64((1 * 1024 * 1024) + (256 * 1024)) // max block size limit
 
 const CRYPTONOTE_MAX_TX_SIZE = 300 * 1024 // max size
 
@@ -84,14 +87,13 @@ const FEE_PER_KB = uint64(1000000000) // .001 dero per kb
 
 // mainnet botstraps at 200 MH
 //const MAINNET_BOOTSTRAP_DIFFICULTY = uint64(200 *  1000* 1000 * BLOCK_TIME)
-const MAINNET_BOOTSTRAP_DIFFICULTY = uint64(200 *1000*1000 * BLOCK_TIME)
-const MAINNET_MINIMUM_DIFFICULTY = uint64(1000*1000 * BLOCK_TIME) // 2KH
+const MAINNET_BOOTSTRAP_DIFFICULTY = uint64(200 * 1000 * 1000 * BLOCK_TIME)
+const MAINNET_MINIMUM_DIFFICULTY = uint64(1000 * 1000 * BLOCK_TIME) // 2KH
 
 // testnet bootstraps at 1 MH
 //const  TESTNET_BOOTSTRAP_DIFFICULTY = uint64(1000*1000*BLOCK_TIME)
 const TESTNET_BOOTSTRAP_DIFFICULTY = uint64(800 * BLOCK_TIME) // testnet bootstrap at 800 H/s
-const TESTNET_MINIMUM_DIFFICULTY = uint64(800 * BLOCK_TIME) // 800 H
-
+const TESTNET_MINIMUM_DIFFICULTY = uint64(800 * BLOCK_TIME)   // 800 H
 
 // this single parameter controls lots of various parameters
 // within the consensus, it should never go below 7
@@ -170,7 +172,6 @@ var Testnet = CHAIN_CONFIG{Name: "testnet", // testnet will always have last 3 b
 		"01" + // extra pubkey tag
 		"1d92826d0656958865a035264725799f39f6988faa97d532f972895de849496d" + // tx pubkey
 		"00", // RCT signature none
-
 }
 
 // the constants can be found in cryptonote_config.h
@@ -178,6 +179,20 @@ var Testnet = CHAIN_CONFIG{Name: "testnet", // testnet will always have last 3 b
 const DYNAMIC_FEE_PER_KB_BASE_FEE_V5 = uint64((2000000000 * 60000) / 300000)
 const DYNAMIC_FEE_PER_KB_BASE_BLOCK_REWARD = uint64(1000000000000) // 1 * pow(10,12)
 
-
 // mainnet has a remote daemon node, which can be used be default, if user provides a  --remote flag
 const REMOTE_DAEMON = "https://rwallet.dero.live"
+
+type CONSENSUS_CONFIG struct {
+	Name     string
+	Interval time.Duration
+}
+
+var Solo_consensus = CONSENSUS_CONFIG{
+	Name:     "solo",
+	Interval: 5,
+}
+
+var Dpos_consensus = CONSENSUS_CONFIG{
+	Name:     "dpos",
+	Interval: 5,
+}

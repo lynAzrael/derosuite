@@ -1,10 +1,10 @@
 package solo
 
 import (
-	"github.com/deroproject/derosuite"
 	"github.com/deroproject/derosuite/block"
 	"github.com/deroproject/derosuite/blockchain"
 	"github.com/deroproject/derosuite/blockchain/mempool"
+	"github.com/deroproject/derosuite/consensus"
 	"github.com/deroproject/derosuite/crypto"
 	"github.com/deroproject/derosuite/globals"
 	"math/rand"
@@ -15,6 +15,10 @@ import (
 
 var logger *log.Entry
 
+func init() {
+	consensus.Reg("solo",NewSolo)
+}
+
 type Solo struct {
 	quitCh chan bool
 
@@ -24,16 +28,16 @@ type Solo struct {
 	interval int64
 }
 
-func NewSolo(cfg derosuite.Consensus_object, chain *blockchain.Blockchain) *Solo {
+func NewSolo(cfg consensus.Consensus_object, chain *blockchain.Blockchain) (consensus.Consensus, error) {
 	logger = globals.Logger.WithFields(log.Fields{"com": "CONSENSUS"})
-	Solo := &Solo{
+	solo := &Solo{
 		quitCh:   make(chan bool, 5),
 		chain:    chain,
 		enable:   false,
 		pending:  false,
 		interval: cfg.GetInterval(),
 	}
-	return Solo
+	return solo,nil
 }
 
 func (solo *Solo) Start() {

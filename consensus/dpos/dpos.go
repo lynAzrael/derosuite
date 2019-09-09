@@ -5,6 +5,10 @@ import (
 	"github.com/deroproject/derosuite/consensus"
 )
 
+func init() {
+	consensus.Reg("dpos", NewDpos)
+}
+
 type Dpos struct {
 	quitCh chan bool
 
@@ -15,17 +19,18 @@ type Dpos struct {
 	interval int64
 }
 
-func NewDpos(cfg consensus.Consensus_object) *Dpos {
+func NewDpos(cfg consensus.Consensus_object, chain *blockchain.Blockchain) (consensus.Consensus, error) {
 	dpos := &Dpos{
 		quitCh:   make(chan bool, 5),
+		chain:    chain,
 		enable:   false,
 		pending:  false,
 		interval: cfg.GetInterval(),
 	}
-	return dpos
+	return dpos, nil
 }
 
-func (dpos *Dpos) Start()  {
+func (dpos *Dpos) Start() {
 
 }
 

@@ -3,14 +3,16 @@ package consensus
 import (
 	"encoding/json"
 	"github.com/deroproject/derosuite/blockchain"
-	"github.com/deroproject/derosuite/consensus/dpos"
-	"github.com/deroproject/derosuite/consensus/solo"
 	"github.com/deroproject/derosuite/globals"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"path/filepath"
 	"sync/atomic"
 )
+
+type RegFunc func(cfg Consensus_object, chain *blockchain.Blockchain) (Consensus, error)
+
+var RegMap = make(map[string]RegFunc)
 
 type Consensus interface {
 	Start()
@@ -47,21 +49,35 @@ func Init_Consensus(params map[string]interface{}, chain *blockchain.Blockchain)
 			loggerpool.Warnf("Error unmarshalling consensus data err %s", err)
 		} else { // successfully unmarshalled data, add it to consensus
 			loggerpool.Debugf("Will try to init consensus：", cfg.name)
-			// 目前实现两种共识，dpos和solo
-			// solo 目前适用于本地单节点进行测试
-			// dpos 即为股份授权证明
-			switch cfg.name {
-			case "dpos":
-				consensus = dpos.NewDpos(cfg)
-			case "solo":
-				consensus = solo.NewSolo(cfg, chain)
-			default:
-				loggerpool.Debugf("Unknow consensus：", cfg.name, "please check the input.")
+			load := Load(cfg.name)
+			if load == nil {
+				loggerpool.Fatalf("Consensus driver not found: %s", cfg.name)
+			}
+
+			consensus, err = load(cfg, chain)
+			if err != nil {
 				return nil, err
 			}
 		}
 	}
 	return &consensus, nil
+}
+
+func Reg(name string, regFunc RegFunc) {
+	if regFunc == nil {
+		panic("Consensus: Register driver is nil")
+	}
+	if _, dup := RegMap[name]; dup {
+		panic("Consensus: Register called twice for driver " + name)
+	}
+	RegMap[name] = regFunc
+}
+
+func Load(name string) (RegFunc) {
+	if reg, ok := RegMap[name]; ok {
+		return reg
+	}
+	return nil
 }
 
 func (cfg *Consensus_object) GetName() string {
