@@ -412,10 +412,11 @@ func (chain *Blockchain) Store_BL(dbtx storage.DBTX, bl *block.Block) {
 	serialized_bytes := bl.Serialize() // we are storing the miner transactions within
 	err := dbtx.StoreObject(BLOCKCHAIN_UNIVERSE, GALAXY_BLOCK, hash[:], PLANET_BLOB, serialized_bytes)
 
-	height := chain.Calculate_Height_At_Tips(dbtx, bl.Tips)
+	height := chain.Get_Height()
+	// height := chain.Calculate_Height_At_Tips(dbtx, bl.Tips)
 
 	// store new height
-	dbtx.StoreUint64(BLOCKCHAIN_UNIVERSE, GALAXY_BLOCK, hash[:], PLANET_HEIGHT, uint64(height))
+	dbtx.StoreUint64(BLOCKCHAIN_UNIVERSE, GALAXY_BLOCK, hash[:], PLANET_HEIGHT, uint64(height+1))
 
 	// this will be ignored by SQL backend as it can be recreated later on
 	//dbtx.StoreObject(BLOCKCHAIN_UNIVERSE, GALAXY_BLOCK, append(itob(uint64(height)),PLANET_HEIGHT_BUCKET...) , hash[:], []byte(""))
@@ -719,6 +720,41 @@ func (chain *Blockchain) Load_BL_FROM_ID(dbtx storage.DBTX, hash [32]byte) (*blo
 
 	if err != nil {
 		logger.Warnf("fError deserialiing block, block id %s len(data) %d data %x", hash[:], len(block_data), block_data)
+		return nil, err
+	}
+	return &bl, nil
+}
+
+func (chain *Blockchain) Load_BL_FROM_HEIGHT(dbtx storage.DBTX, height int64) (*block.Block, error) {
+	var bl block.Block
+	var err error
+	if dbtx == nil {
+		dbtx, err = chain.store.BeginTX(false)
+		if err != nil {
+			logger.Warnf("Could NOT add block to chain. Error opening writable TX, err %s", err)
+			return nil, err
+		}
+
+		defer dbtx.Rollback()
+
+	}
+
+	hash := chain.Get_Blocks_At_Height(dbtx, height)
+	block_data, err := dbtx.LoadObject(BLOCKCHAIN_UNIVERSE, GALAXY_BLOCK, hash[0][:], PLANET_BLOB)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(block_data) == 0 {
+		return nil, fmt.Errorf("Block not found in DB")
+	}
+
+	// we should deserialize the block here
+	err = bl.Deserialize(block_data)
+
+	if err != nil {
+		logger.Warnf("fError deserialiing block, block height %s len(data) %d data %x", height, len(block_data), block_data)
 		return nil, err
 	}
 	return &bl, nil
@@ -1324,7 +1360,7 @@ func (chain *Blockchain) store_TIPS(dbtx storage.DBTX, tips []crypto.Hash) {
 
 // this is exported for rpc server
 func (chain *Blockchain) Load_TIPS_ATOMIC(dbtx storage.DBTX) (tips []crypto.Hash) {
-     return chain.load_TIPS(dbtx)
+	return chain.load_TIPS(dbtx)
 }
 func (chain *Blockchain) load_TIPS(dbtx storage.DBTX) (tips []crypto.Hash) {
 

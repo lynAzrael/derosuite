@@ -17,6 +17,7 @@
 package main
 
 import "io"
+
 import "os"
 import "time"
 import "fmt"
@@ -45,7 +46,6 @@ import "github.com/deroproject/derosuite/p2p"
 import "github.com/deroproject/derosuite/globals"
 import "github.com/deroproject/derosuite/block"
 import "github.com/deroproject/derosuite/config"
-import "github.com/deroproject/derosuite/address"
 import "github.com/deroproject/derosuite/blockchain"
 import "github.com/deroproject/derosuite/transaction"
 
@@ -56,6 +56,8 @@ import "github.com/deroproject/derosuite/cryptonight"
 //import "github.com/deroproject/derosuite/crypto/ringct"
 import "github.com/deroproject/derosuite/blockchain/rpcserver"
 import "github.com/deroproject/derosuite/walletapi"
+
+import c "github.com/deroproject/derosuite/consensus"
 
 //import "github.com/deroproject/derosuite/address"
 
@@ -137,7 +139,7 @@ func main() {
 	globals.Logger.Infof("Daemon in %s mode", globals.Config.Name)
 	globals.Logger.Infof("Daemon data directory %s", globals.GetDataDirectory())
 
-	go check_update_loop ()
+	go check_update_loop()
 
 	params := map[string]interface{}{}
 
@@ -145,7 +147,7 @@ func main() {
 	chain, err := blockchain.Blockchain_Start(params)
 
 	if err != nil {
-		globals.Logger.Warnf("Error starting blockchain err '%s'",err)
+		globals.Logger.Warnf("Error starting blockchain err '%s'", err)
 		return
 	}
 
@@ -169,7 +171,9 @@ func main() {
 		rlog.Infof("Hardware AES detected")
 	}
 
-	p2p.P2P_Init(params)
+	// p2p.P2P_Init(params)
+
+	consensus, err := c.Init_Consensus(params, chain)
 
 	//rpcserver.DEBUG_MODE = true
 	rpc, _ := rpcserver.RPCServer_Start(params)
@@ -221,9 +225,9 @@ func main() {
 
 			globals.Logger.Infof("System will mine to %s with %d threads. Good Luck!!", globals.Arguments["--mining-address"].(string), thread_count)
 
-			go start_miner(chain, params["mining-address"].(*address.Address), thread_count)
+			// go start_miner(chain, params["mining-address"].(*address.Address), thread_count)
+			(*consensus).Start()
 		}
-
 	}
 
 	go time_check_routine() // check whether server time is in sync
@@ -325,18 +329,18 @@ func main() {
 	})
 	l.Refresh() // refresh the prompt
 
-         go func (){
-            var gracefulStop = make(chan os.Signal)
-            signal.Notify(gracefulStop,os.Interrupt) // listen to all signals
-            for {
-                sig := <-gracefulStop
-                fmt.Printf("received signal %s\n", sig)
-            
-                if sig.String() == "interrupt" {
-                    close(Exit_In_Progress)	
-                }
-            }
-        }()
+	go func() {
+		var gracefulStop = make(chan os.Signal)
+		signal.Notify(gracefulStop, os.Interrupt) // listen to all signals
+		for {
+			sig := <-gracefulStop
+			fmt.Printf("received signal %s\n", sig)
+
+			if sig.String() == "interrupt" {
+				close(Exit_In_Progress)
+			}
+		}
+	}()
 
 	for {
 		line, err := l.Readline()
@@ -350,7 +354,7 @@ func main() {
 			}
 		} else if err == io.EOF {
 			<-Exit_In_Progress
-		          break
+			break
 		}
 
 		line = strings.TrimSpace(line)
@@ -437,7 +441,7 @@ func main() {
 				if err, ok := chain.Add_Complete_Block(cbl); ok {
 					globals.Logger.Warnf("Block Successfully accepted by chain at height %d", cbl.Bl.Miner_TX.Vin[0].(transaction.Txin_gen).Height)
 				} else {
-					globals.Logger.Warnf("Block rejected by chain at height %d, please investigate, err %s", cbl.Bl.Miner_TX.Vin[0].(transaction.Txin_gen).Height,err)
+					globals.Logger.Warnf("Block rejected by chain at height %d, please investigate, err %s", cbl.Bl.Miner_TX.Vin[0].(transaction.Txin_gen).Height, err)
 					globals.Logger.Warnf("Stopping import")
 
 				}
@@ -461,15 +465,15 @@ func main() {
 			defer pprof.StopCPUProfile()
 
 			/*
-			        	memoryfile,err := os.Create(filepath.Join(globals.GetDataDirectory(), "memoryprofile.prof"))
-						if err != nil{
-							globals.Logger.Warnf("Could not start memory profiling, err %s", err)
-							continue
-						}
-						if err := pprof.WriteHeapProfile(memoryfile); err != nil {
-			            	globals.Logger.Warnf("could not start memory profile: ", err)
-			        	}
-			        	memoryfile.Close()
+				        	memoryfile,err := os.Create(filepath.Join(globals.GetDataDirectory(), "memoryprofile.prof"))
+							if err != nil{
+								globals.Logger.Warnf("Could not start memory profiling, err %s", err)
+								continue
+							}
+							if err := pprof.WriteHeapProfile(memoryfile); err != nil {
+				            	globals.Logger.Warnf("could not start memory profile: ", err)
+				        	}
+				        	memoryfile.Close()
 			*/
 
 		case command == "print_bc":
