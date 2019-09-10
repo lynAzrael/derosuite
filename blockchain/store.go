@@ -603,7 +603,7 @@ func (chain *Blockchain) Store_New_BL(dbtx storage.DBTX, block block.Block) {
 
 	chain.Height = block.Height
 	dbtx.StoreObject(BLOCKCHAIN_UNIVERSE, GALAXY_BLOCK, PLANET_BLOCK, itob(uint64(block.Height)), block_bytes)
-	logger.Infof("Store block info successfully: data %x and height %d", block_bytes, block.Height)
+	logger.Infof("Store block info successfully: data %x and height %d", block.BlockHash, block.Height)
 	dbtx.Commit()
 }
 
@@ -772,7 +772,6 @@ func (chain *Blockchain) Load_BL_FROM_HEIGHT(dbtx storage.DBTX, height int64) (*
 		return nil, err
 	}
 
-	logger.Infof("Get Block info: height: %d and data %s", height, data)
 	dest, err := common.Decode(data, block.Block{})
 	if err != nil {
 		logger.Warnf("err while unmarshallin block info height %d err %s", height, err)
@@ -781,6 +780,7 @@ func (chain *Blockchain) Load_BL_FROM_HEIGHT(dbtx storage.DBTX, height int64) (*
 
 	if data ,ok := dest.(block.Block); ok {
 		bl = data
+		logger.Infof("Get Block info: height: %d and blockHash %x", height, bl.BlockHash)
 	}
 
 	// we should deserialize the block here
