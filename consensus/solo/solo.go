@@ -1,5 +1,6 @@
 package solo
 
+import "C"
 import (
 	"github.com/deroproject/derosuite/block"
 	"github.com/deroproject/derosuite/blockchain"
@@ -16,7 +17,7 @@ import (
 var logger *log.Entry
 
 func init() {
-	consensus.Reg("solo",NewSolo)
+	consensus.Reg("solo", NewSolo)
 }
 
 type Solo struct {
@@ -37,7 +38,7 @@ func NewSolo(cfg consensus.Consensus_object, chain *blockchain.Blockchain) (cons
 		pending:  false,
 		interval: cfg.GetInterval(),
 	}
-	return solo,nil
+	return solo, nil
 }
 
 func (solo *Solo) Start() {
@@ -89,7 +90,7 @@ func (solo *Solo) CreateBlock() {
 
 		//check dup
 
-		var newblock *block.Block
+		var newblock block.Block
 
 		for i := range txs {
 			newblock.Tx_hashes = append(newblock.Tx_hashes, txs[i].Hash)
@@ -98,7 +99,12 @@ func (solo *Solo) CreateBlock() {
 		newblock.Nonce = rand.New(globals.NewCryptoRandSource()).Uint32()
 
 		// 更新区块
-		solo.chain.Store_BL(nil, newblock)
+		dbtx, err := solo.chain.GetStore().BeginTX(true)
+		if err != nil {
+			logger.Fatalf("Failed to begin tx in create block.")
+			return
+		}
+		solo.chain.Store_BL(dbtx, &newblock)
 	}
 	return
 }

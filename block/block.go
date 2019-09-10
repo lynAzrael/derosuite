@@ -77,9 +77,9 @@ func (bl *Block) GetBlockWork() []byte {
 	buf = append(buf, []byte{byte(bl.Major_Version), byte(bl.Minor_Version), 0, 0, 0, 0, 0}...) // 0 first 7 bytes are version in little endia format
 
 	binary.LittleEndian.PutUint32(buf[2:6], uint32(bl.Timestamp))
-	header_hash := crypto.Keccak256(bl.getserializedheaderforwork()) // 0 + 7
+	// header_hash := crypto.Keccak256(bl.getserializedheaderforwork()) // 0 + 7
 
-	buf = append(buf, header_hash[:]...) // 0 + 7 + 32  = 39
+	// buf = append(buf, header_hash[:]...) // 0 + 7 + 32  = 39
 
 	binary.LittleEndian.PutUint32(scratch[0:4], bl.Nonce) // check whether it needs to be big endian
 	buf = append(buf, scratch[:4]...)                     // 0 + 7 + 32  + 4 = 43
@@ -89,10 +89,10 @@ func (bl *Block) GetBlockWork() []byte {
 
 	buf = append(buf, 0) // total 7 + 32 + 4 + 32 + 1 = 76
 
-	if len(buf) != 76 {
-		panic(fmt.Sprintf("Getwork not equal to  76 bytes  actual %d", len(buf)))
-
-	}
+	//if len(buf) != 76 {
+	//	panic(fmt.Sprintf("Getwork not equal to  76 bytes  actual %d", len(buf)))
+	//
+	//}
 	return buf
 }
 

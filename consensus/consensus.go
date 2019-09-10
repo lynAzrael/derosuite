@@ -12,6 +12,7 @@ import (
 
 //
 type RegFunc func(cfg Consensus_object, chain *blockchain.Blockchain) (Consensus, error)
+
 var RegMap = make(map[string]RegFunc)
 
 var loggerpool *log.Entry
@@ -43,10 +44,11 @@ func Init_Consensus(params map[string]interface{}, chain *blockchain.Blockchain)
 		if err != nil {
 			loggerpool.Warnf("Error unmarshalling consensus data err %s", err)
 		} else {
-			loggerpool.Debugf("Will try to init consensus：", cfg.name)
-			load := Load(cfg.name)
+			loggerpool.Debugf("Will try to init consensus：", cfg.Name)
+			load := Load(cfg.Name)
 			if load == nil {
-				loggerpool.Fatalf("Consensus driver not found: %s", cfg.name)
+				loggerpool.Fatalf("Consensus driver not found: %s", cfg.Name)
+				return nil, err
 			}
 
 			consensus, err = load(cfg, chain)
@@ -76,14 +78,14 @@ func Load(name string) (RegFunc) {
 }
 
 type Consensus_object struct {
-	name      string
-	iinterval int64
+	Name     string
+	Interval int64
 }
 
 func (cfg *Consensus_object) GetName() string {
-	return cfg.name
+	return cfg.Name
 }
 
 func (cfg *Consensus_object) GetInterval() int64 {
-	return cfg.iinterval
+	return cfg.Interval
 }

@@ -409,8 +409,8 @@ func (chain *Blockchain) Store_BL(dbtx storage.DBTX, bl *block.Block) {
 	hash := bl.GetHash()
 
 	// we should deserialize the block here
-	serialized_bytes := bl.Serialize() // we are storing the miner transactions within
-	err := dbtx.StoreObject(BLOCKCHAIN_UNIVERSE, GALAXY_BLOCK, hash[:], PLANET_BLOB, serialized_bytes)
+	//serialized_bytes := bl.Serialize() // we are storing the miner transactions within
+	//err := dbtx.StoreObject(BLOCKCHAIN_UNIVERSE, GALAXY_BLOCK, hash[:], PLANET_BLOB, serialized_bytes)
 
 	height := chain.Get_Height()
 	// height := chain.Calculate_Height_At_Tips(dbtx, bl.Tips)
@@ -575,7 +575,7 @@ func (chain *Blockchain) Store_BL(dbtx storage.DBTX, bl *block.Block) {
 			//chain.Store_TX(&bl.Miner_tx, height)
 
 	*/
-	_ = err
+	//_ = err
 }
 
 var past_cache = lru.New(10240)

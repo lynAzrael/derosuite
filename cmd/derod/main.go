@@ -58,6 +58,7 @@ import "github.com/deroproject/derosuite/blockchain/rpcserver"
 import "github.com/deroproject/derosuite/walletapi"
 
 import c "github.com/deroproject/derosuite/consensus"
+import _ "github.com/deroproject/derosuite/consensus/init"
 
 //import "github.com/deroproject/derosuite/address"
 
@@ -172,7 +173,7 @@ func main() {
 		rlog.Infof("Hardware AES detected")
 	}
 
-	// p2p.P2P_Init(params)
+	p2p.P2P_Init(params)
 
 	consensus, err := c.Init_Consensus(params, chain)
 
@@ -229,6 +230,10 @@ func main() {
 			// go start_miner(chain, params["mining-address"].(*address.Address), thread_count)
 			(*consensus).Start()
 		}
+	}
+
+	if globals.IsSolo(){
+		go (*consensus).Start()
 	}
 
 	go time_check_routine() // check whether server time is in sync

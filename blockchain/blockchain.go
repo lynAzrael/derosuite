@@ -427,6 +427,10 @@ func (chain *Blockchain) Block_Exists(dbtx storage.DBTX, h crypto.Hash) bool {
 	return false
 }
 
+func (chain *Blockchain) GetStore() storage.Store {
+	return chain.store
+}
+
 // various counters/gauges which track a numer of metrics
 // such as number of txs, number of inputs, number of outputs
 // mempool total addition, current mempool size
