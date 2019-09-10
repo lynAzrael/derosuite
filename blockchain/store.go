@@ -16,7 +16,10 @@
 
 package blockchain
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/deroproject/derosuite/common"
+)
 import "sync"
 import "math/big"
 
@@ -84,6 +87,7 @@ var PLANET_HEIGHT = []byte("HEIGHT") // contains height
 var PLANET_PARENT = []byte("PARENT") // parent of block
 var PLANET_PAST = []byte("PAST")     // past of block
 var PLANET_FUTURE = []byte("FUTURE") // future of block only 1 level
+var PLANET_BLOCK = []byte("BLOCK")
 
 //var PLANET_HEIGHT_BUCKET = []byte("H")     // contains all blocks of same height
 //var PLANET_SETTLE_STATUS = []byte("S")     // contains whether the block is settled
@@ -406,7 +410,7 @@ func (chain *Blockchain) Store_BL(dbtx storage.DBTX, bl *block.Block) {
 		panic(fmt.Sprintf("Could NOT store block to DB.  nil dbtx"))
 	}
 	// store block height BHID automatically
-	hash := bl.GetHash()
+	hash := bl.GetBlockHash()
 
 	// we should deserialize the block here
 	//serialized_bytes := bl.Serialize() // we are storing the miner transactions within
@@ -578,6 +582,31 @@ func (chain *Blockchain) Store_BL(dbtx storage.DBTX, bl *block.Block) {
 	//_ = err
 }
 
+func (chain *Blockchain) Store_New_BL(dbtx storage.DBTX, block block.Block) {
+	if dbtx == nil {
+		panic(fmt.Sprintf("Could NOT store block to DB.  nil dbtx"))
+	}
+
+	//hash := block.GetBlockHash()
+	//hash_bytes, err := common.Encode(hash)
+	//if err != nil {
+	//	logger.Fatalf("Encode block failed: ", err)
+	//	return
+	//}
+	//dbtx.StoreObject(BLOCKCHAIN_UNIVERSE, GALAXY_BLOCK, []byte(block.Height), PLANET_BLOCK, hash_bytes)
+
+	block_bytes, err := common.Encode(block)
+	if err != nil {
+		logger.Fatalf("Encode block failed: ", err)
+		return
+	}
+
+	chain.Height = block.Height
+	dbtx.StoreObject(BLOCKCHAIN_UNIVERSE, GALAXY_BLOCK, PLANET_BLOCK, itob(uint64(block.Height)), block_bytes)
+	logger.Infof("Store block info successfully: data %x and height %d", block_bytes, block.Height)
+	dbtx.Commit()
+}
+
 var past_cache = lru.New(10240)
 var past_cache_lock sync.Mutex
 
@@ -734,29 +763,28 @@ func (chain *Blockchain) Load_BL_FROM_HEIGHT(dbtx storage.DBTX, height int64) (*
 			logger.Warnf("Could NOT add block to chain. Error opening writable TX, err %s", err)
 			return nil, err
 		}
-
 		defer dbtx.Rollback()
-
 	}
 
-	hash := chain.Get_Blocks_At_Height(dbtx, height)
-	block_data, err := dbtx.LoadObject(BLOCKCHAIN_UNIVERSE, GALAXY_BLOCK, hash[0][:], PLANET_BLOB)
-
+	data, err := dbtx.LoadObject(BLOCKCHAIN_UNIVERSE, GALAXY_BLOCK, PLANET_BLOCK, itob(uint64(height)))
 	if err != nil {
+		logger.Fatalf("Block not found in DB, height %d err %s", height, err)
 		return nil, err
 	}
 
-	if len(block_data) == 0 {
-		return nil, fmt.Errorf("Block not found in DB")
+	logger.Infof("Get Block info: height: %d and data %s", height, data)
+	dest, err := common.Decode(data, block.Block{})
+	if err != nil {
+		logger.Warnf("err while unmarshallin block info height %d err %s", height, err)
+		return nil, err
+	}
+
+	if data ,ok := dest.(block.Block); ok {
+		bl = data
 	}
 
 	// we should deserialize the block here
-	err = bl.Deserialize(block_data)
-
-	if err != nil {
-		logger.Warnf("fError deserialiing block, block height %s len(data) %d data %x", height, len(block_data), block_data)
-		return nil, err
-	}
+	// err = bl.Deserialize(block_data)
 	return &bl, nil
 }
 

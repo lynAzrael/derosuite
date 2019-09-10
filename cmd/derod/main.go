@@ -645,25 +645,14 @@ func main() {
 				if s, err := strconv.ParseInt(line_parts[1], 10, 64); err == nil {
 					_ = s
 					// first load block id from topo height
-
-					hash, err := chain.Load_Block_Topological_order_at_index(nil, s)
-					if err != nil {
-						fmt.Printf("Skipping block at topo height %d due to error %s\n", s, err)
-						continue
-					}
-					bl, err := chain.Load_BL_FROM_ID(nil, hash)
+					block, err := chain.Load_BL_FROM_HEIGHT(nil, s)
 					if err == nil {
-						fmt.Printf("Block ID : %s\n", hash)
-						fmt.Printf("Block : %x\n", bl.Serialize())
-						fmt.Printf("difficulty: %s\n", chain.Load_Block_Difficulty(nil, hash).String())
-						fmt.Printf("cdifficulty: %s\n", chain.Load_Block_Cumulative_Difficulty(nil, hash).String())
-						fmt.Printf("Height: %d\n", chain.Load_Height_for_BL_ID(nil, hash))
-						fmt.Printf("TopoHeight: %d\n", s)
-
-						fmt.Printf("PoW: %s\n", bl.GetPoWHash())
+						fmt.Printf("Block ID : %s\n", block.BlockHash)
+						fmt.Printf("Block Height: %x\n", block.Height)
+						fmt.Println("Block Tx: %x\n", block.Tx_hashes)
 						//fmt.Printf("Orphan: %v\n",chain.Is_Block_Orphan(hash))
 
-						json_bytes, err := json.Marshal(bl)
+						json_bytes, err := json.Marshal(block)
 
 						fmt.Printf("%s  err : %s\n", string(prettyprint_json(json_bytes)), err)
 					} else {

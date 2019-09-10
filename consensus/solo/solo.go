@@ -76,7 +76,7 @@ func (solo *Solo) CreateBlock() {
 		}
 
 		if needSleep {
-			time.Sleep(time.Duration(solo.interval) * time.Second)
+			time.Sleep(time.Duration(20) * time.Second)
 		}
 
 		// txs := solo.chain.Mempool.Mempool_List_TX_SortedInfo()
@@ -90,6 +90,13 @@ func (solo *Solo) CreateBlock() {
 
 		//check dup
 
+		// get current block
+		bl, err := solo.chain.Load_BL_FROM_HEIGHT(nil, solo.chain.Height)
+		if err != nil {
+			logger.Fatalf("Failed to load current block.")
+			return
+		}
+
 		var newblock block.Block
 
 		for i := range txs {
@@ -97,6 +104,8 @@ func (solo *Solo) CreateBlock() {
 		}
 
 		newblock.Nonce = rand.New(globals.NewCryptoRandSource()).Uint32()
+		newblock.PrefixHash = bl.BlockHash
+		newblock.Height = bl.Height + 1
 
 		// 更新区块
 		dbtx, err := solo.chain.GetStore().BeginTX(true)
@@ -104,7 +113,10 @@ func (solo *Solo) CreateBlock() {
 			logger.Fatalf("Failed to begin tx in create block.")
 			return
 		}
-		solo.chain.Store_BL(dbtx, &newblock)
+
+		solo.chain.Store_New_BL(dbtx, newblock)
+
+		time.Sleep(time.Duration(1) * time.Second)
 	}
 	return
 }
@@ -112,7 +124,7 @@ func (solo *Solo) CreateBlock() {
 func makeTestTxs(num int) []mempool.TX_Sorting_struct {
 	var txs []mempool.TX_Sorting_struct
 	for i := 0; i < num; i++ {
-		tx := mempool.TX_Sorting_struct{FeesPerByte: 1, Hash: crypto.HashHexToHash(time.Now().String()), Size: 1}
+		tx := mempool.TX_Sorting_struct{FeesPerByte: 1, Hash: crypto.HashHexToHash(crypto.RandomPubKey().String()), Size: 1}
 		txs = append(txs, tx)
 	}
 	return txs

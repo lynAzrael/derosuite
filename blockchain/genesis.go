@@ -16,8 +16,6 @@
 
 package blockchain
 
-import "encoding/hex"
-
 import "github.com/romana/rlog"
 
 //import "github.com/deroproject/derosuite/address"
@@ -41,15 +39,15 @@ func Create_Miner_Transaction(height uint64, median_size uint64, already_generat
 // genesis amount 35184372088831
 func Generate_Genesis_Block() (bl block.Block) {
 
-	genesis_tx_blob, err := hex.DecodeString(globals.Config.Genesis_Tx)
-	if err != nil {
-		panic("Failed to hex decode genesis Tx")
-	}
-	err = bl.Miner_TX.DeserializeHeader(genesis_tx_blob)
+	//genesis_tx_blob, err := hex.DecodeString(globals.Config.Genesis_Tx)
+	//if err != nil {
+	//	panic("Failed to hex decode genesis Tx")
+	//}
+	//err = bl.Miner_TX.DeserializeHeader(genesis_tx_blob)
 
-	if err != nil {
-		panic("Failed to parse genesis tx ")
-	}
+	//if err != nil {
+	//	panic("Failed to parse genesis tx ")
+	//}
 
 	//rlog.Tracef(2, "Hash of Genesis Tx %x\n", bl.Miner_tx.GetHash())
 
@@ -60,6 +58,9 @@ func Generate_Genesis_Block() (bl block.Block) {
 	bl.Minor_Version = 1
 	bl.Timestamp = 0 // first block timestamp
 
+	bl.Height = 0
+	bl.PrefixHash = []byte{0}
+
 	var zerohash crypto.Hash
 	_ = zerohash
 	//bl.Tips = append(bl.Tips,zerohash)
@@ -68,16 +69,16 @@ func Generate_Genesis_Block() (bl block.Block) {
 
 	rlog.Tracef(2, "Hash of genesis block is %x", bl.GetHash())
 
-	serialized := bl.Serialize()
-
-	var bl2 block.Block
-	err = bl2.Deserialize(serialized)
-	if err != nil {
-		panic("error while serdes genesis block")
-	}
-	if bl.GetHash() != bl2.GetHash() {
-		panic("hash mismatch serdes genesis block")
-	}
+	//serialized := bl.Serialize()
+	//
+	//var bl2 block.Block
+	//err := bl2.Deserialize(serialized)
+	//if err != nil {
+	//	panic("error while serdes genesis block")
+	//}
+	//if bl.GetHash() != bl2.GetHash() {
+	//	panic("hash mismatch serdes genesis block")
+	//}
 
 	//rlog.Tracef(2, "Genesis Block PoW %x\n", bl.GetPoWHash())
 

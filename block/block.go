@@ -16,7 +16,9 @@
 
 package block
 
-import "fmt"
+import (
+	"fmt"
+)
 
 //import "sort"
 import "bytes"
@@ -42,6 +44,9 @@ type Block_Header struct {
 	Nonce         uint32                  `json:"nonce"` // TODO make nonce 32 byte array for infinite work capacity
 	ExtraNonce    [32]byte                `json:"-"`
 	Miner_TX      transaction.Transaction `json:"miner_tx"`
+	PrefixHash    []byte                  `json:"prefixhash"`
+	Height        int64                   `json:"height"`
+	TxCount       int64                   `json:"txcount"`
 }
 
 type Block struct {
@@ -49,6 +54,7 @@ type Block struct {
 	Proof     [32]byte      `json:"-"` // Reserved for future
 	Tips      []crypto.Hash `json:"tips"`
 	Tx_hashes []crypto.Hash `json:"tx_hashes"`
+	BlockHash []byte        `json:"blockhash"`
 }
 
 // we process incoming blocks in this format
@@ -65,6 +71,10 @@ func (bl *Block) GetHash() (hash crypto.Hash) {
 
 	// keccak hash of this above blob, gives the block id
 	return crypto.Keccak256(long_header)
+}
+
+func (bl *Block) GetBlockHash() (hash crypto.Hash) {
+	return crypto.Keccak256(bl.BlockHash)
 }
 
 // converts a block, into a getwork style work, ready for either submitting the block
