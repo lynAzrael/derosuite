@@ -18,6 +18,7 @@ package block
 
 import (
 	"fmt"
+	"github.com/deroproject/derosuite/common"
 )
 
 //import "sort"
@@ -44,7 +45,7 @@ type Block_Header struct {
 	Nonce         uint32                  `json:"nonce"` // TODO make nonce 32 byte array for infinite work capacity
 	ExtraNonce    [32]byte                `json:"-"`
 	Miner_TX      transaction.Transaction `json:"miner_tx"`
-	PrefixHash    []byte                  `json:"prefixhash"`
+	PrefixHash    crypto.Hash             `json:"prefixhash"`
 	Height        int64                   `json:"height"`
 	TxCount       int64                   `json:"txcount"`
 }
@@ -54,7 +55,7 @@ type Block struct {
 	Proof     [32]byte      `json:"-"` // Reserved for future
 	Tips      []crypto.Hash `json:"tips"`
 	Tx_hashes []crypto.Hash `json:"tx_hashes"`
-	BlockHash []byte        `json:"blockhash"`
+	BlockHash crypto.Hash   `json:"blockhash"`
 }
 
 // we process incoming blocks in this format
@@ -74,7 +75,11 @@ func (bl *Block) GetHash() (hash crypto.Hash) {
 }
 
 func (bl *Block) GetBlockHash() (hash crypto.Hash) {
-	return crypto.Keccak256(bl.BlockHash)
+	data, err := common.Encode(*bl)
+	if err != nil {
+		return
+	}
+	return crypto.Keccak256(data)
 }
 
 // converts a block, into a getwork style work, ready for either submitting the block

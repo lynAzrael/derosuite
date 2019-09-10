@@ -106,6 +106,7 @@ func (solo *Solo) CreateBlock() {
 		newblock.Nonce = rand.New(globals.NewCryptoRandSource()).Uint32()
 		newblock.PrefixHash = bl.BlockHash
 		newblock.Height = bl.Height + 1
+		newblock.BlockHash = newblock.GetBlockHash()
 
 		// 更新区块
 		dbtx, err := solo.chain.GetStore().BeginTX(true)

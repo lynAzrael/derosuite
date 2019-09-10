@@ -59,7 +59,7 @@ func Generate_Genesis_Block() (bl block.Block) {
 	bl.Timestamp = 0 // first block timestamp
 
 	bl.Height = 0
-	bl.PrefixHash = []byte{0}
+	bl.BlockHash = bl.GetBlockHash()
 
 	var zerohash crypto.Hash
 	_ = zerohash
