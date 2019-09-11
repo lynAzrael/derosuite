@@ -72,7 +72,7 @@ func Initialize() {
 	var err error
 	_ = err
 
-	Config = config.Mainnet // default is mainnnet
+	Config = config.Mainnet                    // default is mainnnet
 	if Arguments["--testnet"].(bool) == true { // setup testnet if requested
 		Config = config.Testnet
 	}

@@ -70,7 +70,7 @@ func Reg(name string, regFunc RegFunc) {
 	RegMap[name] = regFunc
 }
 
-func Load(name string) (RegFunc) {
+func Load(name string) RegFunc {
 	if reg, ok := RegMap[name]; ok {
 		return reg
 	}

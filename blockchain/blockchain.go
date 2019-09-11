@@ -1017,7 +1017,7 @@ func (chain *Blockchain) Add_Complete_Block(cbl *block.Complete_Block) (err erro
 			}(i)
 		}
 
-		wg.Wait() // wait for verifications to finish
+		wg.Wait()           // wait for verifications to finish
 		if fail_count > 0 { // check the result
 			block_logger.Warnf("Block verification failed  rejecting since TX verification failed ")
 			return errormsg.ErrInvalidTX, false

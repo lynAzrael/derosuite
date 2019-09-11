@@ -233,14 +233,14 @@ func (chain *Blockchain) write_output_index(dbtx storage.DBTX, block_id crypto.H
 				o.Unlock_Height = tx.Unlock_Time
 			}
 
-			if hard_fork_version_current >= 3 && o.Unlock_Height  != 0 {
+			if hard_fork_version_current >= 3 && o.Unlock_Height != 0 {
 				if o.Unlock_Height < config.CRYPTONOTE_MAX_BLOCK_NUMBER {
-					if o.Unlock_Height  < (o.Height + 1000) {
+					if o.Unlock_Height < (o.Height + 1000) {
 						o.Unlock_Height = o.Height + 1000
 					}
-				}else{
+				} else {
 					if o.Unlock_Height < (o.Block_Time + 12000) {
-						 o.Unlock_Height = o.Block_Time + 12000
+						o.Unlock_Height = o.Block_Time + 12000
 					}
 				}
 			}

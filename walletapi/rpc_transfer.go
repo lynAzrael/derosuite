@@ -59,15 +59,15 @@ func (h Transfer_Handler) ServeJSONRPC(c context.Context, params *fastjson.RawMe
 	rlog.Debugf("Len destinations %d %+v", len(p.Destinations), p)
 
 	payment_id := p.Payment_ID
-	if len(payment_id) > 0 && (len(payment_id) == 64 || len(payment_id) == 16) != true  {
+	if len(payment_id) > 0 && (len(payment_id) == 64 || len(payment_id) == 16) != true {
 		return nil, jsonrpc.ErrInvalidParams() // we should give invalid payment ID
 	}
 	if _, err := hex.DecodeString(p.Payment_ID); err != nil {
 		return nil, jsonrpc.ErrInvalidParams() // we should give invalid payment ID
 	}
 	rlog.Debugf("Payment ID %s", payment_id)
-        
-        unlock_time := p.Unlock_time
+
+	unlock_time := p.Unlock_time
 
 	b, err := json.Marshal(p)
 	if err == nil {

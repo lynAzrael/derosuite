@@ -65,13 +65,12 @@ func (w *Wallet) IsDaemonOnlineCached() bool {
 
 // currently process url  with compatibility for older ip address
 func buildurl(endpoint string) string {
-    if strings.IndexAny(endpoint,"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") >= 0 { // url is already complete
-        return strings.TrimSuffix(endpoint,"/")
-    }else{
-        return "http://" + endpoint
-    }
-    
-    
+	if strings.IndexAny(endpoint, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") >= 0 { // url is already complete
+		return strings.TrimSuffix(endpoint, "/")
+	} else {
+		return "http://" + endpoint
+	}
+
 }
 
 // this is as simple as it gets
@@ -79,9 +78,9 @@ func buildurl(endpoint string) string {
 // this will tell whether the wallet can connection successfully to  daemon or not
 func (w *Wallet) IsDaemonOnline() (err error) {
 
-    if globals.Arguments["--remote"] == true  && globals.IsMainnet() {
-        w.Daemon_Endpoint = config.REMOTE_DAEMON
-    }
+	if globals.Arguments["--remote"] == true && globals.IsMainnet() {
+		w.Daemon_Endpoint = config.REMOTE_DAEMON
+	}
 
 	// if user provided endpoint has error, use default
 	if w.Daemon_Endpoint == "" {
@@ -116,7 +115,7 @@ func (w *Wallet) IsDaemonOnline() (err error) {
 	// execute rpc to service
 	response, err := rpcClient.Call("get_info")
 
-        // notify user of any state change
+	// notify user of any state change
 	// if daemon connection breaks or comes live again
 	if err == nil {
 		if !Connected {
@@ -307,7 +306,7 @@ func (w *Wallet) Sync_Wallet_With_Daemon() {
 
 	rlog.Infof("requesting outputs from height %d\n", start_height)
 
-	response, err := http.Get(fmt.Sprintf("%s/getoutputs.bin?startheight=%d",buildurl(w.Daemon_Endpoint), start_height))
+	response, err := http.Get(fmt.Sprintf("%s/getoutputs.bin?startheight=%d", buildurl(w.Daemon_Endpoint), start_height))
 	if err != nil {
 		rlog.Errorf("Error while requesting outputs from daemon err %s", err)
 	} else {
@@ -510,7 +509,7 @@ func (w *Wallet) IsKeyImageSpent(keyimage crypto.Key) (spent bool) {
 
 	// this method is NOT JSON RPC method, send raw as http request and parse response
 
-	resp, err := http.Post(fmt.Sprintf("%s/is_key_image_spent",buildurl(w.Daemon_Endpoint)), "application/json", &buf)
+	resp, err := http.Post(fmt.Sprintf("%s/is_key_image_spent", buildurl(w.Daemon_Endpoint)), "application/json", &buf)
 	if err != nil {
 		return
 	}
