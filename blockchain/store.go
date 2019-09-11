@@ -88,6 +88,7 @@ var PLANET_PARENT = []byte("PARENT") // parent of block
 var PLANET_PAST = []byte("PAST")     // past of block
 var PLANET_FUTURE = []byte("FUTURE") // future of block only 1 level
 var PLANET_BLOCK = []byte("BLOCK")
+var PLANET_HASH = []byte("HASH")
 
 //var PLANET_HEIGHT_BUCKET = []byte("H")     // contains all blocks of same height
 //var PLANET_SETTLE_STATUS = []byte("S")     // contains whether the block is settled
@@ -194,9 +195,7 @@ func (chain *Blockchain) Is_Block_Topological_order(dbtx storage.DBTX, blid cryp
 			logger.Warnf("Could NOT add block to chain. Error opening writable TX, err %s", err)
 			return false
 		}
-
 		defer dbtx.Rollback()
-
 	}
 
 	index_pos, err := dbtx.LoadUint64(BLOCKCHAIN_UNIVERSE, GALAXY_TOPOLOGICAL_ORDER, GALAXY_TOPOLOGICAL_ORDER, blid[:])
@@ -595,6 +594,7 @@ func (chain *Blockchain) Store_New_BL(dbtx storage.DBTX, block block.Block) {
 	//}
 	//dbtx.StoreObject(BLOCKCHAIN_UNIVERSE, GALAXY_BLOCK, []byte(block.Height), PLANET_BLOCK, hash_bytes)
 
+	// store block
 	block_bytes, err := common.Encode(block)
 	if err != nil {
 		logger.Fatalf("Encode block failed: ", err)
@@ -604,6 +604,19 @@ func (chain *Blockchain) Store_New_BL(dbtx storage.DBTX, block block.Block) {
 	chain.Height = block.Height
 	dbtx.StoreObject(BLOCKCHAIN_UNIVERSE, GALAXY_BLOCK, PLANET_BLOCK, itob(uint64(block.Height)), block_bytes)
 	logger.Infof("Store block info successfully: data %s and height %d", block.BlockHash, block.Height)
+
+	// store block height
+	dbtx.StoreUint64(BLOCKCHAIN_UNIVERSE, GALAXY_KEYVALUE, PLANET_HEIGHT, PLANET_HEIGHT, uint64(block.Height))
+
+	// store block hash
+	hash_bytes, err := common.Encode(block.BlockHash)
+	if err != nil {
+		logger.Fatalf("Encode block hash failed: ", err)
+		return
+	}
+	dbtx.StoreObject(BLOCKCHAIN_UNIVERSE, GALAXY_HEIGHT, PLANET_HASH, itob(uint64(block.Height)), hash_bytes)
+	dbtx.StoreUint64(BLOCKCHAIN_UNIVERSE, GALAXY_KEYVALUE, PLANET_HEIGHT, block.BlockHash[:], uint64(block.Height))
+
 	dbtx.Commit()
 }
 
@@ -754,6 +767,26 @@ func (chain *Blockchain) Load_BL_FROM_ID(dbtx storage.DBTX, hash [32]byte) (*blo
 	return &bl, nil
 }
 
+func (chain *Blockchain) Load_BL_FROM_BLOCKHASH(dbtx storage.DBTX, hash crypto.Hash) (*block.Block, error) {
+	var err error
+	if dbtx == nil {
+		dbtx, err = chain.store.BeginTX(false)
+		if err != nil {
+			logger.Warnf("Could NOT add block to chain. Error opening writable TX, err %s", err)
+			return nil, err
+		}
+		defer dbtx.Rollback()
+	}
+
+	height, err := dbtx.LoadUint64(BLOCKCHAIN_UNIVERSE, GALAXY_BLOCK, PLANET_HEIGHT, hash[:])
+	if err != nil {
+		logger.Fatalf("Block not found in DB, hash %s err %s", hash, err)
+		return nil, err
+	}
+
+	return chain.Load_BL_FROM_HEIGHT(dbtx, int64(height))
+}
+
 func (chain *Blockchain) Load_BL_FROM_HEIGHT(dbtx storage.DBTX, height int64) (*block.Block, error) {
 	var bl block.Block
 	var err error
@@ -778,7 +811,7 @@ func (chain *Blockchain) Load_BL_FROM_HEIGHT(dbtx storage.DBTX, height int64) (*
 		return nil, err
 	}
 
-	if data ,ok := dest.(block.Block); ok {
+	if data, ok := dest.(block.Block); ok {
 		bl = data
 		logger.Infof("Get Block info: height: %d and blockHash %s", height, bl.BlockHash)
 	}

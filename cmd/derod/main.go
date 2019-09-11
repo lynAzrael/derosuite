@@ -232,7 +232,7 @@ func main() {
 		}
 	}
 
-	if globals.IsSolo(){
+	if globals.IsSolo() {
 		go (*consensus).Start()
 	}
 
@@ -626,13 +626,15 @@ func main() {
 				var hash crypto.Hash
 				copy(hash[:32], []byte(bl_raw))
 
-				bl, err := chain.Load_BL_FROM_ID(nil, hash)
+				//bl, err := chain.Load_BL_FROM_ID(nil, hash)
+				bl, err := chain.Load_BL_FROM_BLOCKHASH(nil, hash)
 				if err == nil {
 					fmt.Printf("Block ID : %s\n", hash)
-					fmt.Printf("Block : %x\n", bl.Serialize())
-					fmt.Printf("difficulty: %s\n", chain.Load_Block_Difficulty(nil, hash).String())
-					fmt.Printf("cdifficulty: %s\n", chain.Load_Block_Cumulative_Difficulty(nil, hash).String())
-					fmt.Printf("PoW: %s\n", bl.GetPoWHash())
+					fmt.Printf("Block Height: %d\n", bl.Height)
+					//fmt.Printf("Block : %x\n", bl.Serialize())
+					//fmt.Printf("difficulty: %s\n", chain.Load_Block_Difficulty(nil, hash).String())
+					//fmt.Printf("cdifficulty: %s\n", chain.Load_Block_Cumulative_Difficulty(nil, hash).String())
+					//fmt.Printf("PoW: %s\n", bl.GetPoWHash())
 					//fmt.Printf("Orphan: %v\n",chain.Is_Block_Orphan(hash))
 
 					json_bytes, err := json.Marshal(bl)
@@ -648,8 +650,8 @@ func main() {
 					block, err := chain.Load_BL_FROM_HEIGHT(nil, s)
 					if err == nil {
 						fmt.Printf("Block ID : %s\n", block.BlockHash)
-						fmt.Printf("Block Height: %x\n", block.Height)
-						fmt.Println("Block Tx: %x\n", block.Tx_hashes)
+						fmt.Printf("Block Height: %d\n", block.Height)
+						fmt.Printf("Block Tx: %s\n", block.Tx_hashes)
 						//fmt.Printf("Orphan: %v\n",chain.Is_Block_Orphan(hash))
 
 						json_bytes, err := json.Marshal(block)
