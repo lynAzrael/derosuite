@@ -27,10 +27,10 @@ const FUNDS_SPENT = "FUNDS_SPENT"              // indices of all funds already s
 const FUNDS_SPENT_WHERE = "FUNDS_SPENT_WHERE"  // mapping which output -> spent where
 const FUNDS_BUCKET_OUTGOING = "FUNDS_OUTGOING" // stores all tx where our funds were spent
 
-const RING_BUCKET = "RING_BUCKET"         //  to randomly choose ring members when transactions are created
-const KEYIMAGE_BUCKET = "KEYIMAGE_BUCKET" // used to track which funds have been spent (only on chain ) and which output was consumed
-const SECRET_KEY_BUCKET = "TXSECRETKEY"   // used to keep secret keys for any tx this wallet has created
-const TX_OUT_DETAILS_BUCKET = "TX_OUT_DETAILS"   // used to keep secret keys for any tx this wallet has created
+const RING_BUCKET = "RING_BUCKET"              //  to randomly choose ring members when transactions are created
+const KEYIMAGE_BUCKET = "KEYIMAGE_BUCKET"      // used to track which funds have been spent (only on chain ) and which output was consumed
+const SECRET_KEY_BUCKET = "TXSECRETKEY"        // used to keep secret keys for any tx this wallet has created
+const TX_OUT_DETAILS_BUCKET = "TX_OUT_DETAILS" // used to keep secret keys for any tx this wallet has created
 
 const HEIGHT_TO_BLOCK_BUCKET = "H2BLOCK_BUCKET" // used to track height to block hash mapping
 const OUR_TX_BUCKET = "OUR_TX_BUCKET"           // this contains all TXs in which we have spent OUR  FUNDS
@@ -231,7 +231,7 @@ func Create_Encrypted_Wallet_ViewOnly(filename string, password string, viewkey 
 }
 
 // create an encrypted wallet using using random data
-func Create_Encrypted_Wallet_NonDeterministic(filename string, password string, secretkey,viewkey string) (w *Wallet, err error) {
+func Create_Encrypted_Wallet_NonDeterministic(filename string, password string, secretkey, viewkey string) (w *Wallet, err error) {
 
 	var secret_spend, secret_view crypto.Key
 	rlog.Infof("Creating View Only Wallet")
@@ -243,7 +243,6 @@ func Create_Encrypted_Wallet_NonDeterministic(filename string, password string, 
 	}
 
 	copy(secret_spend[:], spend_raw[:32])
-	
 
 	view_raw, err := hex.DecodeString(strings.TrimSpace(viewkey))
 	if len(view_raw) != 32 || err != nil {
@@ -267,7 +266,7 @@ func Create_Encrypted_Wallet_NonDeterministic(filename string, password string, 
 	w.account.Keys.Spendkey_Public = *(secret_spend.PublicKey())
 	w.account.Keys.Viewkey_Secret = secret_view
 	w.account.Keys.Viewkey_Public = *(secret_view.PublicKey())
-	
+
 	w.Save_Wallet() // save wallet data
 	rlog.Infof("Successfully created view only wallet %s", w.id)
 	return

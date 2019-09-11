@@ -1,4 +1,5 @@
 package checkpoints
+
 var testnet_checksums_base64 = `
 IjxP6h3LhgXJpnAmmyvF+MyqXDbVnMmaHME7lAb1m8Hhvv2MyRJNgqOc1H3oL7ICbrt3owczdibKm+LP
 EV9Lnt8yA5vgd2WW1UZDz870cyMvGp18qdXW9419mk2Sm6I/n8yn1vYB2j9sbylmeiAMzmn2XQxx4kVA

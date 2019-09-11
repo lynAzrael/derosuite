@@ -16,12 +16,12 @@ func Encode(data interface{}) ([]byte, error) {
 	return buffer.Bytes(), nil
 }
 
-func Decode(data []byte, src interface{}) (interface{},error) {
+func Decode(data []byte, src interface{}) (interface{}, error) {
 	decoder := gob.NewDecoder(bytes.NewReader(data))
 
 	err := decoder.Decode(&src)
 	if err != nil {
 		return src, err
 	}
-	return src ,nil
+	return src, nil
 }

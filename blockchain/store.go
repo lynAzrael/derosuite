@@ -778,7 +778,7 @@ func (chain *Blockchain) Load_BL_FROM_HEIGHT(dbtx storage.DBTX, height int64) (*
 		return nil, err
 	}
 
-	if data ,ok := dest.(block.Block); ok {
+	if data, ok := dest.(block.Block); ok {
 		bl = data
 		logger.Infof("Get Block info: height: %d and blockHash %s", height, bl.BlockHash)
 	}

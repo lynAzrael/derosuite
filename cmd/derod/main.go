@@ -232,7 +232,7 @@ func main() {
 		}
 	}
 
-	if globals.IsSolo(){
+	if globals.IsSolo() {
 		go (*consensus).Start()
 	}
 

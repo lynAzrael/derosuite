@@ -107,7 +107,7 @@ type ( // array without name containing block template in hex
 		X []string
 	}
 	SubmitBlock_Result struct {
-                BLID string `json:"blid"`
+		BLID   string `json:"blid"`
 		Status string `json:"status"`
 	}
 )
